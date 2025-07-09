@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AnalyticsDashboardComponent } from './analytics-dashboard/analytics-dashboard.component';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, AnalyticsDashboardComponent],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="app-container">
       <!-- Navigation Sidebar -->
@@ -14,13 +14,13 @@ import { AnalyticsDashboardComponent } from './analytics-dashboard/analytics-das
           <h2>myLINK</h2>
         </div>
         <ul class="nav-menu">
-          <li class="nav-item active">
-            <a href="#" class="nav-link">
+          <li class="nav-item" [class.active]="isActiveRoute('/analytics')">
+            <a (click)="navigateTo('/analytics')" class="nav-link">
               <span class="nav-icon">📊</span>
               <span class="nav-text">Analytics</span>
             </a>
             <ul class="sub-menu">
-              <li><a href="#" class="sub-link active">Statistics</a></li>
+              <li><a (click)="navigateTo('/analytics')" class="sub-link" [class.active]="isActiveRoute('/analytics')">Statistics</a></li>
               <li><a href="#" class="sub-link">Message logs</a></li>
             </ul>
           </li>
@@ -36,8 +36,8 @@ import { AnalyticsDashboardComponent } from './analytics-dashboard/analytics-das
               <span class="nav-text">Numbers</span>
             </a>
           </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
+          <li class="nav-item" [class.active]="isActiveRoute('/email-credentials')">
+            <a (click)="navigateTo('/email-credentials')" class="nav-link">
               <span class="nav-icon">🔧</span>
               <span class="nav-text">Messaging APIs</span>
             </a>
@@ -72,8 +72,8 @@ import { AnalyticsDashboardComponent } from './analytics-dashboard/analytics-das
           </div>
         </header>
 
-        <!-- Analytics Dashboard -->
-        <app-analytics-dashboard></app-analytics-dashboard>
+        <!-- Router Outlet -->
+        <router-outlet></router-outlet>
       </main>
     </div>
   `,
@@ -122,6 +122,7 @@ import { AnalyticsDashboardComponent } from './analytics-dashboard/analytics-das
       color: #ffffff;
       text-decoration: none;
       transition: background-color 0.2s;
+      cursor: pointer;
     }
 
     .nav-link:hover,
@@ -153,6 +154,7 @@ import { AnalyticsDashboardComponent } from './analytics-dashboard/analytics-das
       text-decoration: none;
       font-size: 13px;
       transition: all 0.2s;
+      cursor: pointer;
     }
 
     .sub-link:hover,
@@ -271,4 +273,14 @@ import { AnalyticsDashboardComponent } from './analytics-dashboard/analytics-das
 })
 export class AppComponent {
   title = 'MyLINK2';
+
+  constructor(private router: Router) {}
+
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
+  }
+
+  isActiveRoute(route: string): boolean {
+    return this.router.url === route;
+  }
 }

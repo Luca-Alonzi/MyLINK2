@@ -127,6 +127,6 @@ export class EmailCredentialsComponent implements OnInit {
   }
 
   navigateBack(): void {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/analytics']);
   }
 }
