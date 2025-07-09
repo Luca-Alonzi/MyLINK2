@@ -1,0 +1,204 @@
+<div class="analytics-container">
+  <!-- Header Section -->
+  <div class="header">
+    <h1>Statistics</h1>
+    <div class="header-controls">
+      <div class="view-toggle">
+        <label class="radio-label">
+          <input type="radio" 
+                 name="viewType" 
+                 value="SMS parts" 
+                 [checked]="selectedView === 'SMS parts'"
+                 (change)="onViewToggle('SMS parts')">
+          SMS parts
+        </label>
+        <label class="radio-label">
+          <input type="radio" 
+                 name="viewType" 
+                 value="SMS" 
+                 [checked]="selectedView === 'SMS'"
+                 (change)="onViewToggle('SMS')">
+          SMS
+        </label>
+      </div>
+      <button class="filter-btn" (click)="onFilterClick()">
+        <span class="plus-icon">+</span>
+        Filter
+      </button>
+      <div class="date-range" (click)="onDateRangeChange()">
+        <span>{{ dateRange }}</span>
+        <span class="calendar-icon">📅</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <div class="stat-card" *ngFor="let stat of statCards">
+      <div class="stat-header">
+        <h3>{{ stat.title }}</h3>
+        <span class="info-icon">ℹ️</span>
+      </div>
+      <div class="stat-value">
+        <h2>{{ stat.value }}</h2>
+        <span class="stat-percentage">{{ stat.percentage }}</span>
+      </div>
+      <div class="stat-trend">{{ stat.trend }}</div>
+      <div class="stat-chart">
+        <!-- Simple line chart representation -->
+        <svg width="100%" height="40" class="mini-chart">
+          <polyline 
+            *ngFor="let point of dailyTrafficData; let i = index"
+            points="{{ i * 12 }},{{ 30 - (point.sent * 3) }} {{ (i + 1) * 12 }},{{ 30 - (point.sent * 3) }}"
+            stroke="#1890ff" 
+            stroke-width="2" 
+            fill="none">
+          </polyline>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-container">
+    
+    <!-- Message Status Chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Message status</h3>
+        <span class="info-icon">ℹ️</span>
+        <button class="more-btn">⋯</button>
+      </div>
+      <div class="donut-chart">
+        <div class="donut-chart-container">
+          <svg width="200" height="200" class="donut-svg">
+            <circle cx="100" cy="100" r="60" fill="transparent" stroke="#ff4d4f" stroke-width="20"></circle>
+            <circle cx="100" cy="100" r="60" fill="transparent" stroke="#52c41a" stroke-width="20" 
+                    stroke-dasharray="0 377" stroke-dashoffset="0"></circle>
+          </svg>
+          <div class="donut-center">
+            <div class="total-label">Total</div>
+            <div class="total-value">18</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item" *ngFor="let item of messageStatusData">
+            <span class="legend-color" [style.background-color]="item.color"></span>
+            <span class="legend-label">{{ item.name }}</span>
+            <span class="legend-value">{{ item.value }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Failures Chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Delivery failures</h3>
+        <span class="info-icon">ℹ️</span>
+        <button class="more-btn">⋯</button>
+      </div>
+      <div class="donut-chart">
+        <div class="donut-chart-container">
+          <svg width="200" height="200" class="donut-svg">
+            <circle cx="100" cy="100" r="60" fill="transparent" stroke="#1890ff" stroke-width="20"
+                    stroke-dasharray="251 377" stroke-dashoffset="0"></circle>
+            <circle cx="100" cy="100" r="60" fill="transparent" stroke="#722ed1" stroke-width="20"
+                    stroke-dasharray="126 377" stroke-dashoffset="251"></circle>
+          </svg>
+          <div class="donut-center">
+            <div class="total-label">Total</div>
+            <div class="total-value">18</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item" *ngFor="let item of deliveryFailureData">
+            <span class="legend-color" [style.background-color]="item.color"></span>
+            <span class="legend-label">{{ item.name }}</span>
+            <span class="legend-value">{{ item.value }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Traffic Chart -->
+  <div class="chart-card full-width">
+    <div class="chart-header">
+      <h3>Message traffic over time</h3>
+      <span class="info-icon">ℹ️</span>
+      <button class="more-btn">⋯</button>
+    </div>
+    <div class="line-chart">
+      <svg width="100%" height="300" class="line-chart-svg">
+        <!-- Grid lines -->
+        <g class="grid">
+          <line *ngFor="let line of [0,1,2,3,4,5,6,7]; let i = index" 
+                [attr.x1]="i * 100" 
+                [attr.y1]="0" 
+                [attr.x2]="i * 100" 
+                [attr.y2]="250" 
+                stroke="#f0f0f0" 
+                stroke-width="1">
+          </line>
+        </g>
+        
+        <!-- Data line -->
+        <polyline 
+          [attr.points]="dailyTrafficData.map((d, i) => (i * 100) + ',' + (250 - d.sent * 30)).join(' ')"
+          stroke="#1890ff" 
+          stroke-width="3" 
+          fill="none">
+        </polyline>
+        
+        <!-- Data points -->
+        <circle 
+          *ngFor="let point of dailyTrafficData; let i = index"
+          [attr.cx]="i * 100" 
+          [attr.cy]="250 - point.sent * 30" 
+          r="4" 
+          fill="#1890ff">
+        </circle>
+      </svg>
+    </div>
+    <div class="chart-controls">
+      <label class="chart-toggle">
+        <input type="checkbox" checked> SMS parts
+      </label>
+      <label class="chart-toggle">
+        <input type="checkbox"> SMS
+      </label>
+    </div>
+  </div>
+
+  <!-- Country Data Table -->
+  <div class="table-card">
+    <div class="chart-header">
+      <h3>Messages sent per country</h3>
+      <span class="info-icon">ℹ️</span>
+      <button class="more-btn">⋯</button>
+    </div>
+    <div class="data-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Total sent</th>
+            <th>Delivery success</th>
+            <th>In Process</th>
+            <th>Delivery Failure</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of countryData">
+            <td>{{ row.country }}</td>
+            <td>{{ row.totalSent }}</td>
+            <td>{{ row.deliverySuccess }}</td>
+            <td>{{ row.inProcess }}</td>
+            <td>{{ row.deliveryFailure }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
