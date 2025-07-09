@@ -1,15 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 
 interface EmailCredential {
   id: string;
-  email: string;
-  provider: string;
-  username: string;
-  lastAccessed: Date;
+  name: string;
+  clientId: string;
+  clientSecret: string;
   isActive: boolean;
+  showSecret: boolean;
 }
 
 @Component({
@@ -20,113 +19,104 @@ interface EmailCredential {
   styleUrls: ['./email-credentials.component.css']
 })
 export class EmailCredentialsComponent implements OnInit {
-  emailCredentials: EmailCredential[] = [];
-  showAddForm = false;
-  showEditForm = false;
-  editingCredential: EmailCredential | null = null;
-  
-  newCredential: Partial<EmailCredential> = {
-    email: '',
-    provider: '',
-    username: '',
-    isActive: true
-  };
-
-  providers = ['Gmail', 'Outlook', 'Yahoo', 'ProtonMail', 'Other'];
-
-  constructor(private router: Router) {}
+  credentials: EmailCredential[] = [];
+  showGenerateModal = false;
+  newCredentialName = '';
 
   ngOnInit(): void {
-    this.loadEmailCredentials();
+    this.loadCredentials();
   }
 
-  loadEmailCredentials(): void {
-    // In a real application, this would load from a service
-    this.emailCredentials = [
+  loadCredentials(): void {
+    this.credentials = [
       {
         id: '1',
-        email: 'user@example.com',
-        provider: 'Gmail',
-        username: 'user',
-        lastAccessed: new Date('2025-01-08'),
-        isActive: true
+        name: 'Mail for Mylinkconnect',
+        clientId: 'd6b65ad9-2fd6-40eb-b8f8-77d462ac3ed2',
+        clientSecret: 'hidden-secret-1',
+        isActive: true,
+        showSecret: false
       },
       {
         id: '2',
-        email: 'work@company.com',
-        provider: 'Outlook',
-        username: 'work.user',
-        lastAccessed: new Date('2025-01-07'),
-        isActive: true
+        name: 'Test for MyLinkConnect',
+        clientId: 'dd190047-0c9c-444c-b384-854da39d83ed',
+        clientSecret: 'hidden-secret-2',
+        isActive: true,
+        showSecret: false
       }
     ];
   }
 
-  toggleAddForm(): void {
-    this.showAddForm = !this.showAddForm;
-    this.showEditForm = false;
-    this.resetNewCredential();
+  generateCredentials(): void {
+    this.showGenerateModal = true;
   }
 
-  addCredential(): void {
-    if (this.newCredential.email && this.newCredential.provider && this.newCredential.username) {
-      const credential: EmailCredential = {
+  createCredential(): void {
+    if (this.newCredentialName.trim()) {
+      const newCredential: EmailCredential = {
         id: Date.now().toString(),
-        email: this.newCredential.email,
-        provider: this.newCredential.provider,
-        username: this.newCredential.username,
-        lastAccessed: new Date(),
-        isActive: true
+        name: this.newCredentialName,
+        clientId: this.generateUUID(),
+        clientSecret: this.generateSecret(),
+        isActive: true,
+        showSecret: false
       };
-      
-      this.emailCredentials.push(credential);
-      this.showAddForm = false;
-      this.resetNewCredential();
+      this.credentials.push(newCredential);
+      this.closeModal();
     }
   }
 
-  editCredential(credential: EmailCredential): void {
-    this.editingCredential = { ...credential };
-    this.showEditForm = true;
-    this.showAddForm = false;
-  }
-
-  updateCredential(): void {
-    if (this.editingCredential) {
-      const index = this.emailCredentials.findIndex(c => c.id === this.editingCredential!.id);
-      if (index !== -1) {
-        this.emailCredentials[index] = { ...this.editingCredential };
-        this.showEditForm = false;
-        this.editingCredential = null;
-      }
-    }
-  }
-
-  deleteCredential(id: string): void {
-    if (confirm('Are you sure you want to delete this email credential?')) {
-      this.emailCredentials = this.emailCredentials.filter(c => c.id !== id);
-    }
+  closeModal(): void {
+    this.showGenerateModal = false;
+    this.newCredentialName = '';
   }
 
   toggleActive(credential: EmailCredential): void {
     credential.isActive = !credential.isActive;
   }
 
-  cancelEdit(): void {
-    this.showEditForm = false;
-    this.editingCredential = null;
+  copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      // Could show a toast notification here
+      console.log('Copied to clipboard');
+    });
   }
 
-  resetNewCredential(): void {
-    this.newCredential = {
-      email: '',
-      provider: '',
-      username: '',
-      isActive: true
-    };
+  resetSecret(credential: EmailCredential): void {
+    if (confirm('Are you sure you want to reset the client secret? This action cannot be undone.')) {
+      credential.clientSecret = this.generateSecret();
+      credential.showSecret = true;
+      setTimeout(() => {
+        credential.showSecret = false;
+      }, 5000);
+    }
   }
 
-  navigateBack(): void {
-    this.router.navigate(['/analytics']);
+  deleteCredential(credential: EmailCredential): void {
+    if (confirm(`Are you sure you want to delete "${credential.name}"? This action cannot be undone.`)) {
+      this.credentials = this.credentials.filter(c => c.id !== credential.id);
+    }
+  }
+
+  private generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  private generateSecret(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 32; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  refreshTable(): void {
+    this.loadCredentials();
   }
 }
